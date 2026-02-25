@@ -2,4 +2,8 @@
 
 
 [project]
-name = "Portfolio-analytics
+name = "Portfolio-analytics"
+
+dependencies = [
+    "faker==40.5.1"
+]
