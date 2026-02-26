@@ -1,9 +1,12 @@
 
 import faker
+import pandas
+import numpy
 
 class Simuloi_Osakedataa:
 
-    def __init__(self, osakkeiden_määrä: int, päivien_määrä: int):
+    def __init__(self, osakkeiden_määrä: int, päivien_määrä: int, 
+                 aloitus_päivämäärä: str="2010-01-01"):
         """
         
         """
@@ -15,6 +18,7 @@ class Simuloi_Osakedataa:
         self.faker = faker.Faker()
         self.osakkeiden_määrä: int = osakkeiden_määrä
         self.päivien_määrä: int = päivien_määrä
+        self.aloitus_päivämäärä: str = aloitus_päivämäärä
         self.osakkeet_nimet: list = self.nimilista_uniikit()
 
     def nimilista_uniikit(self) -> list[str]:
@@ -38,7 +42,41 @@ class Simuloi_Osakedataa:
 
         return list(osakkeiden_nimet)
 
+    def luo_osakedata(self) -> pandas.DataFrame:
+        """
+        
+        """
+        päivämäärät: pandas.DatetimeIndex = pandas.date_range(start=self.aloitus_päivämäärä,
+                                                              periods=self.päivien_määrä,
+                                                              freq="B")
+        osakedata_df: pandas.DataFrame = pandas.DataFrame(index=päivämäärät)
+        askel: float = 1 / 252
 
+        for nimi in self.osakkeet_nimet:
+            # Arvotaan aloitus ja loeptusajat
+            aloitus_päivä: int = numpy.random.randint(low=0, high=self.päivien_määrä // 2)
+            lopetus_päivä: int = numpy.random.randint(low=aloitus_päivä, high=self.päivien_määrä)
+            päiviä: int = lopetus_päivä - aloitus_päivä
+
+            kurssit = numpy.zeros(shape=päiviä)
+            kurssit[0] = numpy.random.randint(low=1, high=1000, dtype=int)
+
+            # Tee drfit yms
+            mu: float = numpy.random.uniform(low=-0.2, high=0.2)
+            sigma: float = numpy.random.uniform(low=0.10, high=0.35)
+
+            for t in range(1, päiviä):
+                Z = numpy.random.randn()
+                kurssit[t] = kurssit[t-1] * numpy.exp(
+                    (mu - 0.5 * sigma ** 2) * askel + sigma * numpy.sqrt(askel) * Z
+                )
+            
+            vektori = numpy.full(self.päivien_määrä, numpy.nan)
+            vektori[aloitus_päivä:lopetus_päivä] = kurssit
+
+            osakedata_df[nimi] = vektori
+        
+        return osakedata_df
 
 simulaattori = Simuloi_Osakedataa(osakkeiden_määrä=600, päivien_määrä=300)
-print(simulaattori.osakkeet_nimet)
+print(simulaattori.luo_osakedata)
