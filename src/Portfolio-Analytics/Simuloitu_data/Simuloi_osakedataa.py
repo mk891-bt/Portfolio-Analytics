@@ -12,8 +12,8 @@ class Simuloi_Osakedataa:
         """
         if osakkeiden_määrä <= 0:
             raise ValueError("Osakkeiden määrä 0!")
-        if päivien_määrä <= 0:
-            raise ValueError("Päivien määrän on oltava > 0")
+        if päivien_määrä <= 10:
+            raise ValueError("Päivien määrän on oltava > 10")
          
         self.faker = faker.Faker()
         self.osakkeiden_määrä: int = osakkeiden_määrä
@@ -55,7 +55,7 @@ class Simuloi_Osakedataa:
         for nimi in self.osakkeet_nimet:
             # Arvotaan aloitus ja loeptusajat
             aloitus_päivä: int = numpy.random.randint(low=0, high=self.päivien_määrä // 2)
-            lopetus_päivä: int = numpy.random.randint(low=aloitus_päivä, high=self.päivien_määrä)
+            lopetus_päivä: int = numpy.random.randint(low=(aloitus_päivä + 4), high=self.päivien_määrä)
             päiviä: int = lopetus_päivä - aloitus_päivä
 
             kurssit = numpy.zeros(shape=päiviä)
@@ -78,5 +78,5 @@ class Simuloi_Osakedataa:
         
         return osakedata_df
 
-simulaattori = Simuloi_Osakedataa(osakkeiden_määrä=600, päivien_määrä=300)
-print(simulaattori.luo_osakedata)
+simulaattori = Simuloi_Osakedataa(osakkeiden_määrä=600, päivien_määrä=20)
+print(simulaattori.luo_osakedata())
