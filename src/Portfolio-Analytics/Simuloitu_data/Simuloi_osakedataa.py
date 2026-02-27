@@ -52,6 +52,9 @@ class Simuloi_Osakedataa:
         osakedata_df: pandas.DataFrame = pandas.DataFrame(index=päivämäärät)
         askel: float = 1 / 252
 
+        # Yhteinen markkinatekijä, luo korrelaatiota
+        markkina_shokit: numpy.ndarray = numpy.random.randn(self.päivien_määrä)
+
         for nimi in self.osakkeet_nimet:
             # Arvotaan aloitus ja loeptusajat
             aloitus_päivä: int = numpy.random.randint(low=0, high=self.päivien_määrä // 2)
@@ -59,14 +62,27 @@ class Simuloi_Osakedataa:
             päiviä: int = lopetus_päivä - aloitus_päivä
 
             kurssit = numpy.zeros(shape=päiviä)
-            kurssit[0] = numpy.random.randint(low=1, high=1000, dtype=int)
+            kurssit[0] = numpy.random.randint(low=1, high=1000)
 
-            # Tee drfit yms
-            mu: float = numpy.random.uniform(low=-0.2, high=0.2)
-            sigma: float = numpy.random.uniform(low=0.10, high=0.35)
+            # Arpoo driftin, ottaa huomioon
+            ryhmä_valinta: float = numpy.random.rand()
+            # Supervoittajat, osakkeet jotka tuottavat suurimman osan tuotoista
+            if ryhmä_valinta < 0.15:
+                mu: float = numpy.random.normal(loc=0.18,
+                                            scale=0.05)
+            elif ryhmä_valinta < 0.75:
+                mu: float = numpy.random.normal(loc=0.04,
+                                            scale=0.04)
+            else:
+                mu: float = numpy.random.normal(loc=-0.05,
+                                            scale=0.05)
+            
+            # Volatiliteetti vuositasolla
+            sigma: float = numpy.random.uniform(low=0.10, high=0.30)
+
 
             for t in range(1, päiviä):
-                Z = numpy.random.randn()
+                Z = 0.65 * markkina_shokit[aloitus_päivä + t] + 0.35 * numpy.random.randn()
                 kurssit[t] = kurssit[t-1] * numpy.exp(
                     (mu - 0.5 * sigma ** 2) * askel + sigma * numpy.sqrt(askel) * Z
                 )
