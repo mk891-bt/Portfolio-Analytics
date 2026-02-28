@@ -1,2 +1,2 @@
 # MarketDataFaker
-Projekti joka pyrkii simuloimaan markkinadataa realistisesti analyytiikka ja kaupankäynti ohjelmien kehittämistä/testausta varten
+A project aiming to realistically simulate market data for developing and testing analytics and trading applications
