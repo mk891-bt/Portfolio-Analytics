@@ -15,7 +15,7 @@ class Simuloi_Osakedataa:
         if päivien_määrä <= 10:
             raise ValueError("Päivien määrän on oltava > 10")
          
-        self.faker = faker.Faker()
+        self.faker: faker.Faker = faker.Faker()
         self.osakkeiden_määrä: int = osakkeiden_määrä
         self.päivien_määrä: int = päivien_määrä
         self.aloitus_päivämäärä: str = aloitus_päivämäärä

@@ -2,7 +2,7 @@
 
 
 [project]
-name = "Portfolio-analytics"
+name = "MarketDataFaker"
 
 dependencies = [
     "faker==40.5.1"
