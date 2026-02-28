@@ -1,2 +1,2 @@
 # MarketDataFaker
-Library that aims to create realistic market data for testing purposes for portoflio analytics, trading engines, etc.
+Projekti joka pyrkii simuloimaan markkinadataa realistisesti analyytiikka ja kaupankäynti ohjelmien kehittämistä/testausta varten
