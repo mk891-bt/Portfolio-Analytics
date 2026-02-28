@@ -1,16 +1,11 @@
-
-import faker
-import pandas
-import numpy
-
 import faker
 import pandas
 import numpy
 
 
-class StockDataSimulator:
+class StockPriceSimulator:
 
-    def __init__(self, num_stocks: int, num_dates: int,
+    def __init__(self, num_stocks: int, num_days: int,
                  starting_date: str = "2010-01-01"):
         """
         Initialize the stock data simulator.
@@ -20,12 +15,12 @@ class StockDataSimulator:
 
         # Temporary logic for development
         # TODO: Improve this logic later
-        if num_dates <= 10:
+        if num_days <= 10:
             raise ValueError("There must be a minimum of 10 days")
 
         self.faker: faker.Faker = faker.Faker()
         self.num_stocks: int = num_stocks
-        self.num_days: int = num_dates
+        self.num_days: int = num_days
         self.starting_date: str = starting_date
         self.stock_names: list = self.generate_unique_names()
 
@@ -49,7 +44,7 @@ class StockDataSimulator:
 
         return list(unique_names)
 
-    def create_stock_data(self) -> pandas.DataFrame:
+    def create_stock_prices(self) -> pandas.DataFrame:
         """
         Create simulated stock price data.
         """
@@ -62,8 +57,12 @@ class StockDataSimulator:
         stock_df: pandas.DataFrame = pandas.DataFrame(index=dates)
         step: float = 1 / 252
 
-        # Common market factor to induce correlation
+        # Common market factor: daily normal shocks, with rare jumps (std=0.05) on random days
+        # TODO add the ability modify these
         market_shocks: numpy.ndarray = numpy.random.randn(self.num_days)
+        jump_days: numpy.ndarray = numpy.random.choice(a=self.num_days,
+                                                       size=max(1, self.num_days // 50), replace=False)
+        market_shocks[jump_days] += numpy.random.normal(0, 0.05, size=len(jump_days))
 
         for name in self.stock_names:
             # Randomly choose start and end dates
@@ -72,7 +71,7 @@ class StockDataSimulator:
             days_active: int = end_day - start_day
 
             prices = numpy.zeros(shape=days_active)
-            prices[0] = numpy.random.randint(low=1, high=1000)
+            prices[0] = numpy.random.randint(low=10, high=200)
 
             # Random drift based on stock "group"
             group_choice: float = numpy.random.rand()
@@ -102,7 +101,7 @@ class StockDataSimulator:
         return stock_df
 
 
-simulator = StockDataSimulator(num_stocks=600, num_dates=25)
-print(simulator.create_stock_data())
+simulator = StockPriceSimulator(num_stocks=600, num_days=25)
+print(simulator.create_stock_prices())
 
 
