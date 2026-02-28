@@ -5,5 +5,5 @@
 name = "MarketDataFaker"
 
 dependencies = [
-    "faker==40.5.1"
+    
 ]
