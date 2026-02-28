@@ -1,2 +1,2 @@
-# Portfolio-Analytics
-Portfolio analytics and trading strategy evaluation system with the ability to link it to trading engines
+# MarketDataFaker
+Projekti joka pyrkii simuloimaan markkinadataa realistisesti analyytiikka ja kaupankäynti ohjelmien kehittämistä/testausta varten
