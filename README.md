@@ -1,2 +1,2 @@
-# Portfolio-Analytics
-Portfolio analytics and trading strategy evaluation system with the ability to link it to trading engines
+# MarketDataFaker
+Library that aims to create realistic market data for testing purposes for portoflio analytics, trading engines, etc.
