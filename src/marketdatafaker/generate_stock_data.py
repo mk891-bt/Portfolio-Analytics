@@ -67,44 +67,53 @@ class StockPriceSimulator:
                                 survivor_interval: tuple[float, float] = (0.5, 0.8)
                                 ) -> list[str]:
         """
-        Selects a subset of stocks to remain active for the full simulation duration.
+        Identify a subset of stocks that are exempt from delisting/early termination.
 
-        Logic:
-        Calculates a survival percentage—either via a fixed value or a random 
-        uniform range—and uses random sampling to select which stock names 
-        will bypass delisting logic.
+        This method acts as a "survivorship bias" generator. It determines what 
+        fraction of the total universe should persist for the entire simulation 
+        window. It handles input validation by clamping values to the [0, 1] range 
+        and ensuring interval parity (low <= high).
 
         Args:
-            name_list: All unique stock identifiers.
-            survivor_pct: Fraction (0-1) to keep if use_random_interval is False.
-            use_random_interval: Toggles between fixed pct or random range.
-            survivor_interval: Low/high bounds for random survival percentage.
+            name_list: A list of all unique stock tickers/identifiers.
+            survivor_pct: Fixed fraction (0.0 to 1.0) of stocks to keep active 
+                if 'use_random_interval' is False. Defaults to 0.
+            use_random_interval: If True, the survival fraction is randomized 
+                using a uniform distribution within 'survivor_interval'.
+            survivor_interval: A tuple (min, max) defining the bounds for 
+                the random survival fraction.
 
         Returns:
-            List of stock names designated as survivors.
+            A list containing the names of stocks designated as survivors.
 
-        Edge Case Handling:
-        # TODO: Validate interval bounds [0, 1], ensure low <= high, 
-        # and clamp survivor_pct to prevent sampling errors.
+        Note:
+            Uses 'numpy.random.uniform' for interval sampling and 'random.sample' 
+            for selection to ensure no duplicates in the survivor list.
         """
 
-        #TODO fix for potential wrong arguments
-
+        # Ensure that the survivor percentage is valid range between 0.0 and 1.0
+        # before assigning the survivorship percentage
         if use_random_interval is True:
-            pct: float = numpy.random.uniform(low=survivor_interval[0], high=survivor_interval[1])
+            raw_low: float = max(0.0, min(1.0, survivor_interval[0]))
+            raw_high: float = max(0.0, min(1.0, survivor_interval[1]))
+            low, high = sorted((raw_low, raw_high))
+            pct: float = numpy.random.uniform(low=low, high=high)
         else:
-            pct: float = survivor_pct
-        
-        num_survivors: int = int(pct * len(name_list))
+            pct: float = max(0.0, min(1.0, survivor_pct))
 
+        # Generate the survivor stock list
+        num_survivors: int = int(round(pct * len(name_list)))
         survivor_names: list[str] = random.sample(population=name_list,
                                                   k=num_survivors)
         return survivor_names
 
 
-
-    def create_stock_prices(self, num_stocks: int, 
+    def create_stock_prices(self, 
+                            num_stocks: int, 
                             num_periods: int,
+                            use_random_survival: bool = False,
+                            survivor_pct: float = 0.5,
+                            survivor_interval: tuple[float, float] = (0.5, 0.8),
                             starting_date: str = "2010-01-01", 
                             interval: str = "d") -> pandas.DataFrame:
         """
@@ -127,8 +136,10 @@ class StockPriceSimulator:
         # Assigns the survivor stocks which persist throughout the dataset
         #TODO add needed arguments to the function arguments to make this usable
         survivor_names = self._assign_survivor_stocks(name_list=name_list,
-                                                      survivor_pct=0.5, 
-                                                      use_random_interval=False)
+                                                      survivor_pct=survivor_pct, 
+                                                      use_random_interval=use_random_survival,
+                                                      survivor_interval=survivor_interval)
+
 
         stock_df = pandas.DataFrame(index=dates)
         step_map = {"d": 1/252, "w": 1/52, "m": 1/12}
