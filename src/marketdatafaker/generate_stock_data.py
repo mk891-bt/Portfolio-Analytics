@@ -10,6 +10,7 @@ class StockPriceSimulator:
         """
         Initialize the stock data simulator.
         """
+        pass
 
     def _generate_unique_names(self, num_stocks:int) -> list[str]:
         """
@@ -172,11 +173,27 @@ class StockPriceSimulator:
             else:
                 mu = numpy.random.normal(loc=-0.05, scale=0.05)
 
-            sigma = numpy.random.uniform(low=0.10, high=0.30)
+            # Heston volatility parameters
+            initial_sigma = numpy.random.uniform(low=0.10, high=0.30)
+            v_t = initial_sigma ** 2
+            theta = v_t    # Long-term mean variance
+            kappa = 2.0         # Rate of mean reversion
+            vol_of_vol = 0.15   # Volatility of variance
+            rho = -0.6          # Leverage effect (price/vol correlations)
+
 
             for t in range(1, days_active):
-                Z = 0.65 * market_shocks[start_day + t] + 0.35 * numpy.random.randn()
-                prices[t] = prices[t - 1] * numpy.exp((mu - 0.5 * sigma ** 2) * step + sigma * numpy.sqrt(step) * Z)
+                Z_price = 0.65 * market_shocks[start_day + t] + 0.35 * numpy.random.randn()
+                
+                # Correlate volatility shock to the price
+                Z_vol = rho * Z_price + numpy.sqrt(1 - rho ** 2) * numpy.random.randn()
+                # Update variance
+                v_t = max(0.0001, v_t + kappa * (theta - v_t) * step + 
+                          vol_of_vol * numpy.sqrt(v_t * step) * Z_vol)
+                current_sigma = numpy.sqrt(v_t)
+
+                prices[t] = prices[t - 1] * numpy.exp((mu - 0.5 * v_t) * step + 
+                                                      current_sigma * numpy.sqrt(step) * Z_price)
 
             vector = numpy.full(num_periods, numpy.nan)
             vector[start_day:end_day] = prices
